@@ -18,12 +18,13 @@ body{background:#F3F4F6;min-height:100vh;padding:24px 16px}
 .btn-new:hover{background:rgba(255,255,255,0.25)}
 
 /* Stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #F3F4F6}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid #F3F4F6}
 .stat{padding:14px 16px;text-align:center;border-right:1px solid #F3F4F6}
 .stat:last-child{border-right:none}
 .stat-val{font-size:22px;font-weight:700;color:#111827}
 .stat-val.orange{color:#E8470A}
 .stat-val.green{color:#059669}
+.stat-val.red{color:#dc2626}
 .stat-label{font-size:11px;color:#9CA3AF;margin-top:2px;text-transform:uppercase;letter-spacing:0.4px}
 
 /* Toolbar */
@@ -111,6 +112,7 @@ body{background:#F3F4F6;min-height:100vh;padding:24px 16px}
     <div class="stat"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total Orders</div></div>
     <div class="stat"><div class="stat-val orange" id="stat-preparing">0</div><div class="stat-label">Preparing</div></div>
     <div class="stat"><div class="stat-val green" id="stat-delivered">0</div><div class="stat-label">Delivered</div></div>
+    <div class="stat"><div class="stat-val red" id="stat-cancelled">0</div><div class="stat-label">Cancelled</div></div>
     <div class="stat"><div class="stat-val" id="stat-revenue">₹0</div><div class="stat-label">Revenue</div></div>
   </div>
 
@@ -122,6 +124,7 @@ body{background:#F3F4F6;min-height:100vh;padding:24px 16px}
       <span class="chip" onclick="setFilter('preparing', this)">Preparing</span>
       <span class="chip" onclick="setFilter('ready', this)">Ready</span>
       <span class="chip" onclick="setFilter('delivered', this)">Delivered</span>
+      <span class="chip" onclick="setFilter('cancelled', this)">Cancelled</span>
     </div>
     <div class="search-box">
       <svg width="14" height="14" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -300,6 +303,7 @@ function updateStats() {
   document.getElementById('stat-total').textContent = orders.length;
   document.getElementById('stat-preparing').textContent = orders.filter(o => o.status === 'preparing').length;
   document.getElementById('stat-delivered').textContent = orders.filter(o => o.status === 'delivered').length;
+  document.getElementById('stat-cancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
   const rev = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + o.amount, 0);
   document.getElementById('stat-revenue').textContent = '₹' + rev.toLocaleString('en-IN');
   document.getElementById('footer-time').textContent = 'Updated just now';
