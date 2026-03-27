@@ -49,6 +49,7 @@ body{background:#F3F4F6;min-height:100vh;padding:24px 16px}
 .order-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
 .order-name{font-size:13px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .order-id{font-size:11px;color:#9CA3AF}
+.order-phone{font-size:11px;color:#6B7280;margin-bottom:3px}
 .order-items{font-size:12px;color:#6B7280;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .progress-wrap{display:flex;align-items:center;gap:8px}
 .progress-bar{flex:1;height:3px;background:#F3F4F6;border-radius:2px}
@@ -88,6 +89,8 @@ body{background:#F3F4F6;min-height:100vh;padding:24px 16px}
 .form-group label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px}
 .form-group input,.form-group select{width:100%;border:1px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-size:14px;color:#111827;outline:none;transition:border-color 0.2s}
 .form-group input:focus,.form-group select:focus{border-color:#E8470A}
+.form-group input.error{border-color:#dc2626}
+.error-message{font-size:11px;color:#dc2626;margin-top:4px}
 .modal-actions{display:flex;gap:10px;margin-top:20px}
 .btn-cancel{flex:1;padding:10px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-size:14px;cursor:pointer;font-weight:500}
 .btn-submit{flex:2;padding:10px;border:none;border-radius:8px;background:#E8470A;color:#fff;font-size:14px;cursor:pointer;font-weight:600;transition:background 0.2s}
@@ -152,6 +155,11 @@ body{background:#F3F4F6;min-height:100vh;padding:24px 16px}
       <input type="text" id="f-name" placeholder="e.g. Rahul Sharma"/>
     </div>
     <div class="form-group">
+      <label>Phone Number</label>
+      <input type="text" id="f-phone" placeholder="e.g. 9876543210" maxlength="10"/>
+      <div class="error-message" id="phone-error" style="display: none;">Please enter a valid 10-digit phone number</div>
+    </div>
+    <div class="form-group">
       <label>Items Ordered</label>
       <input type="text" id="f-items" placeholder="e.g. Pizza, Coke"/>
     </div>
@@ -191,6 +199,11 @@ let orders = [];
 let currentFilter = 'all';
 let orderCounter = 1040;
 
+function validatePhone(phone) {
+  const phoneRegex = /^\d{10}$/;
+  return phoneRegex.test(phone);
+}
+
 async function loadOrders() {
   const res = await fetch('/orders');
   orders = await res.json();
@@ -200,14 +213,27 @@ async function loadOrders() {
 
 async function placeOrder() {
   const name   = document.getElementById('f-name').value.trim();
+  const phone  = document.getElementById('f-phone').value.trim();
   const items  = document.getElementById('f-items').value.trim();
   const amount = parseInt(document.getElementById('f-amount').value) || 0;
   const icon   = document.getElementById('f-category').value;
+  
+  // Reset error states
+  document.getElementById('f-phone').classList.remove('error');
+  document.getElementById('phone-error').style.display = 'none';
+  
   if (!name || !items) return alert('Please fill customer name and items.');
+  
+  if (!validatePhone(phone)) {
+    document.getElementById('f-phone').classList.add('error');
+    document.getElementById('phone-error').style.display = 'block';
+    return;
+  }
+  
   const res = await fetch('/orders', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ customerName: name, items, amount, icon })
+    body: JSON.stringify({ customerName: name, phoneNumber: phone, items, amount, icon })
   });
   const order = await res.json();
   orders.unshift(order);
@@ -282,6 +308,7 @@ function renderOrders() {
           <span class="order-name">${o.customerName}</span>
           <span class="order-id">#ORD-${o.id}</span>
         </div>
+        <div class="order-phone">${o.phoneNumber || 'No phone'}</div>
         <div class="order-items">${o.items}</div>
         <div class="progress-wrap">
           <div class="progress-bar"><div class="progress-fill ${isGreen?'green':''}" style="width:${prog}%"></div></div>
@@ -312,8 +339,12 @@ function updateStats() {
 function openModal() {
   document.getElementById('modal').classList.add('open');
   document.getElementById('f-name').value = '';
+  document.getElementById('f-phone').value = '';
   document.getElementById('f-items').value = '';
   document.getElementById('f-amount').value = '';
+  // Reset error states
+  document.getElementById('f-phone').classList.remove('error');
+  document.getElementById('phone-error').style.display = 'none';
 }
 
 function closeModal() {

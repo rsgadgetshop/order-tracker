@@ -6,11 +6,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 let orders = [
-  { id: 1041, customerName: 'Rahul Sharma',  items: 'Margherita Pizza, Coke',   amount: 480, icon: '🍕', status: 'preparing', createdAt: '10 mins ago' },
-  { id: 1042, customerName: 'Priya Verma',   items: 'Burger Combo, Fries',      amount: 320, icon: '🍔', status: 'ready',     createdAt: '18 mins ago' },
-  { id: 1043, customerName: 'Amit Singh',    items: 'Noodles, Spring Rolls',    amount: 260, icon: '🍜', status: 'placed',    createdAt: '3 mins ago'  },
-  { id: 1044, customerName: 'Sneha Patel',   items: 'Thali Set, Lassi',         amount: 380, icon: '🍱', status: 'delivered', createdAt: '35 mins ago' },
-  { id: 1045, customerName: 'Vikram Nair',   items: 'Paneer Tacos x2',          amount: 290, icon: '🌮', status: 'preparing', createdAt: '12 mins ago' },
+  { id: 1041, customerName: 'Rahul Sharma',  phoneNumber: '9876543210', items: 'Margherita Pizza, Coke',   amount: 480, icon: '🍕', status: 'preparing', createdAt: '10 mins ago' },
+  { id: 1042, customerName: 'Priya Verma',   phoneNumber: '9123456789', items: 'Burger Combo, Fries',      amount: 320, icon: '🍔', status: 'ready',     createdAt: '18 mins ago' },
+  { id: 1043, customerName: 'Amit Singh',    phoneNumber: '9888777666', items: 'Noodles, Spring Rolls',    amount: 260, icon: '🍜', status: 'placed',    createdAt: '3 mins ago'  },
+  { id: 1044, customerName: 'Sneha Patel',   phoneNumber: '9555444333', items: 'Thali Set, Lassi',         amount: 380, icon: '🍱', status: 'delivered', createdAt: '35 mins ago' },
+  { id: 1045, customerName: 'Vikram Nair',   phoneNumber: '9111222333', items: 'Paneer Tacos x2',          amount: 290, icon: '🌮', status: 'preparing', createdAt: '12 mins ago' },
 ];
 let nextId = 1046;
 
@@ -21,11 +21,18 @@ app.get('/orders', (req, res) => {
 
 // POST place new order
 app.post('/orders', (req, res) => {
-  const { customerName, items, amount, icon } = req.body;
+  const { customerName, phoneNumber, items, amount, icon } = req.body;
   if (!customerName || !items) return res.status(400).json({ error: 'customerName and items are required' });
+  
+  // Validate phone number (10 digits only)
+  if (phoneNumber && !/^\d{10}$/.test(phoneNumber)) {
+    return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
+  }
+  
   const order = {
     id: nextId++,
     customerName,
+    phoneNumber: phoneNumber || '',
     items,
     amount: amount || 0,
     icon: icon || '🍔',
